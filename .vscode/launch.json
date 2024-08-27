@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "Python Debugger: Python File cs50",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": ["degrees/large"]
+        }
+    ]
+}
