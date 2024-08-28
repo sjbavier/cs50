@@ -94,7 +94,11 @@ def shortest_path(source, target):
 
     # solution placeholder
     solution = []
-    
+
+    if source == target:
+        print(f"same name for source and target")
+        return solution
+
     # use queue for breadth first search
     q_frontier = QueueFrontier()
 
