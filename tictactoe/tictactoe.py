@@ -64,8 +64,6 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    X_wins = False
-    O_wins = False
     def check_hor():
         for row in board:
             row_set = set(row)
@@ -102,7 +100,7 @@ def winner(board):
         return None
     
     checks = [check_hor, check_ver, check_dia]
-    result = check_all
+    result = check_all(checks)
     print(f"winner {result}")
     return result
 
@@ -110,18 +108,35 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    raise NotImplementedError
+    is_winner = winner(board)
+    # if there is a winner its over
+    if is_winner is not None:
+        return True
+    # if there are actions left its not over
+    if len(actions(board)) != 0:
+        return False
+    else:
+        return True
+
 
 
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    raise NotImplementedError
-
+    winning_player = winner(board)
+    if winning_player is not None:
+        if winning_player == X:
+            return 1
+        else:
+            return -1
+    else:
+        return 0
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    if terminal(board):
+        return None
+    
