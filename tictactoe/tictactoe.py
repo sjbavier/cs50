@@ -22,29 +22,89 @@ def player(board):
     """
     Returns player who has the next turn on a board.
     """
-    raise NotImplementedError
+    played = 0
+    for row in board:
+        for column in row:
+            if column != None:
+                played += 1
+    
+    if played % 2 == 0:
+        return X
+    else:
+        return O
 
 
 def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    raise NotImplementedError
+    actions = set()
+    for i, row in enumerate( board ):
+        for j, column in enumerate(row):
+            if column != EMPTY:
+                actions.add((i, j))
 
+    return actions
 
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    raise NotImplementedError
-
+    i, j = action
+    players_mark = player(board)
+    if board[i][j] != EMPTY:
+        print(f"invalid move {i} {j}")
+        raise ValueError
+    else:
+        copy_board = [row[:] for row in board] # deep copy list comprehension for small matrix
+        copy_board[i][j] = players_mark
+        return copy_board
 
 def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    raise NotImplementedError
+    X_wins = False
+    O_wins = False
+    def check_hor():
+        for row in board:
+            row_set = set(row)
+            if len(row_set) == 1 and row_set[0] != EMPTY:
+                return row_set[0]
+        return None
 
+    def check_ver():
+        transposed_board = list(zip(*board)) # trick to flip rows to cols
+        for col in transposed_board:
+            col_set = set(col)
+            if len(col_set) == 1 and col_set[0] != EMPTY:
+                # all 3 values in col are same and not EMPTY so return winner
+                return col_set[0]
+        return None
+
+    def check_dia():
+        diag_top = set()
+        diag_bot = set()
+        for i, row in enumerate(board):
+            diag_top.add(board[i][i])
+            diag_bot.add(board[i][len(board) - i])
+        if len(diag_top) == 1 and diag_top[0] != EMPTY:
+            return diag_top[0]
+        if len(diag_bot) == 1 and diag_bot[0] != EMPTY:
+            return diag_bot[0]
+        return None
+    
+    def check_all(*funcs):
+        for func in funcs:
+            result = func()
+            if result is not None:
+                return result
+        return None
+    
+    checks = [check_hor, check_ver, check_dia]
+    result = check_all
+    print(f"winner {result}")
+    return result
 
 def terminal(board):
     """
