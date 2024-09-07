@@ -27,7 +27,7 @@ def player(board):
         for column in row:
             if column != None:
                 played += 1
-    
+
     if played % 2 == 0:
         return X
     else:
@@ -39,12 +39,13 @@ def actions(board):
     Returns set of all possible actions (i, j) available on the board.
     """
     actions = set()
-    for i, row in enumerate( board ):
+    for i, row in enumerate(board):
         for j, column in enumerate(row):
             if column != EMPTY:
                 actions.add((i, j))
 
     return actions
+
 
 def result(board, action):
     """
@@ -56,14 +57,16 @@ def result(board, action):
         print(f"invalid move {i} {j}")
         raise ValueError
     else:
-        copy_board = [row[:] for row in board] # deep copy list comprehension for small matrix
+        copy_board = [row[:] for row in board]  # deep copy list comprehension for small matrix
         copy_board[i][j] = players_mark
         return copy_board
+
 
 def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
+
     def check_hor():
         for row in board:
             row_set = set(row)
@@ -72,7 +75,7 @@ def winner(board):
         return None
 
     def check_ver():
-        transposed_board = list(zip(*board)) # trick to flip rows to cols
+        transposed_board = list(zip(*board))  # trick to flip rows to cols
         for col in transposed_board:
             col_set = set(col)
             if len(col_set) == 1 and col_set[0] != EMPTY:
@@ -91,18 +94,19 @@ def winner(board):
         if len(diag_bot) == 1 and diag_bot[0] != EMPTY:
             return diag_bot[0]
         return None
-    
+
     def check_all(*funcs):
         for func in funcs:
             result = func()
             if result is not None:
                 return result
         return None
-    
+
     checks = [check_hor, check_ver, check_dia]
     result = check_all(checks)
     print(f"winner {result}")
     return result
+
 
 def terminal(board):
     """
@@ -119,7 +123,6 @@ def terminal(board):
         return True
 
 
-
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
@@ -133,10 +136,26 @@ def utility(board):
     else:
         return 0
 
+
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
     if terminal(board):
         return None
-    
+
+    def max_value(state):
+        if terminal(state):
+            return utility(state)
+        v = -math.inf
+        for action in actions(state):
+            v = max(v, min_value(result(state, action)))
+        return v
+
+    def min_value(state):
+        if terminal(state):
+            return utility(state)
+        v = math.inf
+        for action in actions(state):
+            v = min(v, max_value(result(state, action)))
+        return v
