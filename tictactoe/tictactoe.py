@@ -116,7 +116,7 @@ def terminal(board):
     # if there is a winner its over
     if is_winner is not None:
         return True
-    # if there are actions left its not over
+    # if there are actions left it's not over
     if len(actions(board)) != 0:
         return False
     else:
@@ -144,6 +144,8 @@ def minimax(board):
     if terminal(board):
         return None
 
+    min_action = None
+
     def max_value(state):
         if terminal(state):
             return utility(state)
@@ -156,6 +158,13 @@ def minimax(board):
         if terminal(state):
             return utility(state)
         v = math.inf
+        nonlocal min_action
         for action in actions(state):
-            v = min(v, max_value(result(state, action)))
+            new_v = min(v, max_value(result(state, action)))
+            if new_v < v:
+                v = new_v
+                min_action = action
+
         return v
+
+    current_player = player(board)
