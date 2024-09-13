@@ -70,15 +70,15 @@ def winner(board):
     def check_hor():
         for row in board:
             row_set = set(row)
-            if len(row_set) == 1 and row_set[0] != EMPTY:
-                return row_set[0]
+            if len(row_set) == 1 and row[0] != EMPTY:
+                return row[0]
         return None
 
     def check_ver():
         transposed_board = list(zip(*board))  # trick to flip rows to cols
         for col in transposed_board:
             col_set = set(col)
-            if len(col_set) == 1 and col_set[0] != EMPTY:
+            if len(col_set) == 1 and col[0] != EMPTY:
                 # all 3 values in col are same and not EMPTY so return winner
                 return col_set[0]
         return None
@@ -87,12 +87,15 @@ def winner(board):
         diag_top = set()
         diag_bot = set()
         for i, row in enumerate(board):
+            len_board = len(board) - i
             diag_top.add(board[i][i])
-            diag_bot.add(board[i][len(board) - i])
-        if len(diag_top) == 1 and diag_top[0] != EMPTY:
-            return diag_top[0]
-        if len(diag_bot) == 1 and diag_bot[0] != EMPTY:
-            return diag_bot[0]
+            diag_bot.add(board[i][len_board - 1 - i])
+        diag_top_item = diag_top.pop();
+        diag_bot_item = diag_bot.pop();
+        if len(diag_top) == 1 and diag_top_item != EMPTY:
+            return diag_top_item
+        if len(diag_bot) == 1 and diag_bot_item != EMPTY:
+            return diag_bot_item
         return None
 
     def check_all(*funcs):
@@ -103,7 +106,7 @@ def winner(board):
         return None
 
     checks = [check_hor, check_ver, check_dia]
-    result = check_all(checks)
+    result = check_all(*checks)
     print(f"winner {result}")
     return result
 
