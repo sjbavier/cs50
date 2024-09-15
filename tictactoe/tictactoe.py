@@ -41,7 +41,7 @@ def actions(board):
     actions = set()
     for i, row in enumerate(board):
         for j, column in enumerate(row):
-            if column != EMPTY:
+            if column == EMPTY:
                 actions.add((i, j))
 
     return actions
@@ -69,33 +69,28 @@ def winner(board):
 
     def check_hor():
         for row in board:
-            row_set = set(row)
-            if len(row_set) == 1 and row[0] != EMPTY:
-                return row[0]
+            if all(col is not None for col in row) and len(set(row)) == 1:
+                return set(row).pop()
         return None
 
     def check_ver():
         transposed_board = list(zip(*board))  # trick to flip rows to cols
-        for col in transposed_board:
-            col_set = set(col)
-            if len(col_set) == 1 and col[0] != EMPTY:
-                # all 3 values in col are same and not EMPTY so return winner
-                return col_set[0]
+        for column in transposed_board:
+            if all(col is not None for col in column) and len(set(column)) == 1:
+                return set(column).pop()
         return None
 
     def check_dia():
-        diag_top = set()
-        diag_bot = set()
+        diag_top = []
+        diag_bot = []
         for i, row in enumerate(board):
-            len_board = len(board) - i
-            diag_top.add(board[i][i])
-            diag_bot.add(board[i][len_board - 1 - i])
-        diag_top_item = diag_top.pop();
-        diag_bot_item = diag_bot.pop();
-        if len(diag_top) == 1 and diag_top_item != EMPTY:
-            return diag_top_item
-        if len(diag_bot) == 1 and diag_bot_item != EMPTY:
-            return diag_bot_item
+            len_board_diag = len(board) - 1 - i
+            diag_top.append(board[i][i])
+            diag_bot.append(board[i][len_board_diag])
+        if all(diag is not None for diag in diag_top) and len(set(diag_top)) == 1:
+            return set(diag_top).pop()
+        if all(diag is not None for diag in diag_bot) and len(set(diag_bot)) == 1:
+            return set(diag_bot).pop()
         return None
 
     def check_all(*funcs):
@@ -107,7 +102,6 @@ def winner(board):
 
     checks = [check_hor, check_ver, check_dia]
     result = check_all(*checks)
-    print(f"winner {result}")
     return result
 
 
@@ -145,52 +139,46 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
 
-
-    best_action = None
     def max_value(state):
         if terminal(state):
             return utility(state)
         v = -math.inf
-        for action in actions(state):
-            new_result = result(state, action)
-            new_v = max(v, min_value(new_result))
-            if new_v > v:
-                v = new_v
+        for move in actions(state):
+            new_r = result(state, move)
+            v = max(v, min_value(new_r))
+
         return v
 
     def min_value(state):
         if terminal(state):
             return utility(state)
         v = math.inf
-        for action in actions(state):
-            new_result = result(state, action)
-            new_v = min(v, max_value(new_result))
-            if new_v < v:
-                v = new_v
-
+        for move in actions(state):
+            new_r = result(state, move)
+            v = min(v, max_value(new_r))
         return v
 
     # start initial values based on player
     current_player = player(board)
+    best_action = None
     value = None
     if current_player == X:
-        value = -math.inf
+        best_score = -math.inf
     else:
-        value = math.inf
+        best_score = math.inf
 
     # loop through initial actions
     for action in actions(board):
         new_result = result(board, action)
         if current_player == X:
-            v = max_value(state=new_result)
-            if v > value:
+            score = min_value(state=new_result)
+            if score > best_score:
                 best_action = action
+                best_score = score
         if current_player == O:
-            v = min_value(state=new_result)
-            if v < value:
+            score = max_value(state=new_result)
+            if score < best_score:
                 best_action = action
-    
+                best_score = score
+
     return best_action
-
-
-        
