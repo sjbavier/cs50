@@ -53,10 +53,14 @@ def result(board, action):
     """
     i, j = action
     players_mark = player(board)
-    if board[i][j] != EMPTY:
+    if board[i][j] != EMPTY or i < 0 or j < 0:
         print(f"invalid move {i} {j}")
-        raise ValueError
+        raise NameError('invalid move')
     else:
+        try:
+            board[i][j]
+        except IndexError:
+            raise NameError('invalid move')
         copy_board = [row[:] for row in board]  # deep copy list comprehension for small matrix
         copy_board[i][j] = players_mark
         return copy_board
@@ -166,7 +170,6 @@ def minimax(board):
     # start initial values based on player
     current_player = player(board)
     best_action = None
-    value = None
     alpha = -math.inf
     beta = math.inf
     if current_player == X:
