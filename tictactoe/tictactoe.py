@@ -53,10 +53,14 @@ def result(board, action):
     """
     i, j = action
     players_mark = player(board)
-    if board[i][j] != EMPTY:
+    if board[i][j] != EMPTY or i < 0 or j < 0:
         print(f"invalid move {i} {j}")
-        raise ValueError
+        raise NameError('invalid move')
     else:
+        try:
+            board[i][j]
+        except IndexError:
+            raise NameError('invalid move')
         copy_board = [row[:] for row in board]  # deep copy list comprehension for small matrix
         copy_board[i][j] = players_mark
         return copy_board
@@ -139,29 +143,35 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
 
-    def max_value(state):
+    def max_value(state, alpha, beta):
         if terminal(state):
             return utility(state)
         v = -math.inf
         for move in actions(state):
             new_r = result(state, move)
-            v = max(v, min_value(new_r))
-
+            v = max(v, min_value(new_r, alpha, beta))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
         return v
 
-    def min_value(state):
+    def min_value(state, alpha, beta):
         if terminal(state):
             return utility(state)
         v = math.inf
         for move in actions(state):
             new_r = result(state, move)
-            v = min(v, max_value(new_r))
+            v = min(v, max_value(new_r, alpha, beta))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
         return v
 
     # start initial values based on player
     current_player = player(board)
     best_action = None
-    value = None
+    alpha = -math.inf
+    beta = math.inf
     if current_player == X:
         best_score = -math.inf
     else:
@@ -169,16 +179,20 @@ def minimax(board):
 
     # loop through initial actions
     for action in actions(board):
+        if terminal(board):
+            return None
         new_result = result(board, action)
         if current_player == X:
-            score = min_value(state=new_result)
+            score = min_value(new_result, alpha, beta)
             if score > best_score:
                 best_action = action
                 best_score = score
+            alpha = max(alpha, best_score)
         if current_player == O:
-            score = max_value(state=new_result)
+            score = max_value(new_result, alpha, beta)
             if score < best_score:
                 best_action = action
                 best_score = score
+            beta = min(beta, best_score)
 
     return best_action
