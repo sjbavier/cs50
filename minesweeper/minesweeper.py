@@ -94,6 +94,8 @@ class Sentence():
     def __init__(self, cells, count):
         self.cells = set(cells)
         self.count = count
+        self.safe = set()
+        self.mine = set()
 
     def __eq__(self, other):
         return self.cells == other.cells and self.count == other.count
@@ -105,27 +107,55 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        raise NotImplementedError
+        # if the cells are the same length as the count
+        # return those plus the known mines if any
+        if len(self.cells) == self.count:
+            return self.mine.add(self.cells)
+        # return only the known mines
+        elif self.mine is not None:
+            return self.mine
+        return None
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        raise NotImplementedError
+        # if the count of the sentence is 0 all cells are safe 
+        # plus whatever has been marked
+        if self.count == 0:
+            return self.safe.add(self.cells)
+        # return the known safes
+        elif self.safe is not None:
+            return self.safe
+        return None
 
     def mark_mine(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        raise NotImplementedError
+        if self.cells.pop() is None:
+            return None
+        
+        # add marked mine to known mines
+        self.mine.add(cell)
+        # remove count associated with cell set
+        self.count -= 1
+        # remove marked mine from set
+        self.cells.remove(cell)
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        if self.cells.pop() is None:
+           return None 
+        
+        # add cell to safe set
+        self.safe.add(cell)
+        # remove cell from cells set
+        self.cells.remove(cell)
 
 
 class MinesweeperAI():
