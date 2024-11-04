@@ -197,6 +197,26 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
+     def enumerate_surrounding(self, cell):
+        """
+        returns set of surrounding cells within bounds
+        """
+        row_max = self.width -1
+        column_max = self.height -1
+        (i, j) = cell
+        cell_set = set()
+
+        for i in range(i - 1, i + 2):
+            for j in range(j - 1, j + 2):
+                if (i, j) == cell:
+                    continue
+
+                if 0 <= i <= row_max and 0 <= j <= column_max:
+                    cell_set.add((i, j))
+
+        return cell_set
+
+
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -212,11 +232,17 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+
+        # 1) mark the cell as a move that has been made
         self.moves_made.add(cell)
-        self.safes.add(cell)
-        (i, j) = cell
-        
-        new_sentence = Sentence(cell, 0)
+
+        # 2) mark the cell as safe
+        self.mark_safe(cell)
+
+        # 3) add a new sentence to the AI's knowledge base
+        # based on the value of `cell` and `count`
+        cell_set = self.enumerate_surrounding(cell)
+        new_sentence = Sentence(cell_set, count)
         self.knowledge.append(new_sentence)
 
         raise NotImplementedError
