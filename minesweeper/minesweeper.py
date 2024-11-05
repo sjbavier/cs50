@@ -197,7 +197,7 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
-     def enumerate_surrounding(self, cell):
+    def enumerate_surrounding(self, cell):
         """
         returns set of surrounding cells within bounds
         """
@@ -242,10 +242,33 @@ class MinesweeperAI():
         # 3) add a new sentence to the AI's knowledge base
         # based on the value of `cell` and `count`
         cell_set = self.enumerate_surrounding(cell)
-        new_sentence = Sentence(cell_set, count)
+        new_sentence = Sentence(cells=cell_set, count=count)
         self.knowledge.append(new_sentence)
 
-        raise NotImplementedError
+        # 4) mark any additional cells as safe or as mines
+        # if it can be concluded based on the AI's knowledge base
+        # for each sentence in ai knowledge check the known mines and add them to the ai
+        for sentence in self.knowledge:
+            if sentence.known_mines() is not None:
+                for mine in sentence.known_mines():
+                    self.mark_mine(mine)
+            # for each sentence in ai knowledge check the known safes and add them to the ai
+            if sentence.known_safes() is not None:
+                for safe in sentence.known_safes():
+                    self.mark_safe(safe)
+
+        # 5) add any new sentences to the AI's knowledge base
+        # if they can be inferred from existing knowledge
+        for sentence in self.knowledge:
+            if new_sentence.cells.issubset(sentence.cells):
+                derived_cells = sentence.cells.union(new_sentence.cells)
+                derived_count = abs( sentence.count - new_sentence.count )
+                derived_sentence = Sentence(cells=derived_cells, count=derived_count)
+                # add derived knowledge
+                self.knowledge.append(derived_sentence)
+                # remove old knowledge
+                self.knowledge.remove(sentence)
+
 
     def make_safe_move(self):
         """
