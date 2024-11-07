@@ -292,4 +292,16 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        row_max = self.width -1
+        column_max = self.height -1
+        cell_set = set()
+
+        for i in range(0, row_max):
+            for j in range(0, column_max):
+                # if cell is mine or already moved skip
+                if (i, j) in self.mines or (i, j) in self.moves_made:
+                    continue
+
+                cell_set.add((i, j))
+
+        return random.choice(list(cell_set))
