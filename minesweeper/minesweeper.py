@@ -108,25 +108,20 @@ class Sentence():
         Returns the set of all cells in self.cells known to be mines.
         """
         # if the cells are the same length as the count
-        # return those plus the known mines if any
-        if len(self.cells) == self.count:
-            for mine in self.cells:
-                self.mine.add(mine)
-        # return only the known mines
-        return self.mine
+        if len(self.cells) == self.count and len(self.cells) > 0:
+            return set(self.cells)
+        # return empty
+        return set()
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
         # if the count of the sentence is 0 all cells are safe 
-        # plus whatever has been marked
-        if self.count == 0:
-            # add to the known safes
-            for safe in self.cells:
-                self.safe.add(safe)
-        # return the known safes
-        return self.safe
+        if self.count == 0 and len(self.cells) > 0:
+            return set(self.cells)
+        # return empty
+        return set()
 
     def mark_mine(self, cell):
         """
@@ -136,7 +131,7 @@ class Sentence():
 
         # add marked mine to known mines
         self.mine.add(cell)
-        if cell in self.cells:
+        if cell in self.cells.copy():
             # remove count associated with cell set
             self.count -= 1
             # remove marked mine from set
@@ -153,7 +148,7 @@ class Sentence():
         # add cell to safe set
         self.safe.add(cell)
         # remove cell from cells set
-        if cell in self.cells:
+        if cell in self.cells.copy():
             self.cells.remove(cell)
 
 
@@ -184,7 +179,7 @@ class MinesweeperAI():
         to mark that cell as a mine as well.
         """
         self.mines.add(cell)
-        for sentence in self.knowledge:
+        for sentence in self.knowledge.copy():
             sentence.mark_mine(cell)
 
     def mark_safe(self, cell):
@@ -193,7 +188,7 @@ class MinesweeperAI():
         to mark that cell as safe as well.
         """
         self.safes.add(cell)
-        for sentence in self.knowledge:
+        for sentence in self.knowledge.copy():
             sentence.mark_safe(cell)
 
     def enumerate_surrounding(self, cell):
@@ -239,13 +234,16 @@ class MinesweeperAI():
 
         # 3) add a new sentence to the AI's knowledge base
         # based on the value of `cell` and `count`
-        cell_set = self.enumerate_surrounding(cell) - self.mines - self.safes   # exclude known mines and safes
-        new_sentence = Sentence(cells=cell_set, count=count)
+        surrounding_cells = self.enumerate_surrounding(cell)
+        known_mines = surrounding_cells.intersection(self.mines)
+        cell_set = surrounding_cells - self.mines - self.safes  # exclude known mines and safes
+        adjusted_count = count - len(known_mines) # adjust count based on mines removed from surrounding set
+        new_sentence = Sentence(cells=cell_set, count=adjusted_count)
         self.knowledge.append(new_sentence)
 
         # 4) mark any additional cells as safe or as mines
         # if it can be concluded based on the AI's knowledge base
-        # for each sentence in ai knowledge check the known mines and add them to the ai
+        # for each sentence in AI knowledge check the known mines and add them to the AI
         changed = True
         while changed:
             changed = False
@@ -253,10 +251,9 @@ class MinesweeperAI():
             mines = set()
 
             # loop over sentences in knowledge and update
-            for sentence in self.knowledge:
+            for sentence in self.knowledge.copy():
                 safes.update(sentence.known_safes())
                 mines.update(sentence.known_mines())
-
 
             if safes:
                 for safe in safes.copy():
