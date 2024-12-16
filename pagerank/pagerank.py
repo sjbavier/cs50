@@ -56,8 +56,42 @@ def transition_model(corpus, page, damping_factor):
     With probability `damping_factor`, choose a link at random
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
+
+    The corpus is a Python dictionary mapping a page name to a set of all pages linked to by that page.
+    The page is a string representing which page the random surfer is currently on.
+    The damping_factor is a floating point number representing the damping factor to be used when generating the probabilities.
+
+    With probability damping_factor, the random surfer should randomly choose one of the links from page with equal probability.
+    With probability 1 - damping_factor, the random surfer should randomly choose one of all pages in the corpus with equal probability.
     """
-    raise NotImplementedError
+
+    # first case, no outbound links all pages have equal probability
+    links = corpus[page]
+    prob_distribution = {}
+    len_corpus = len(corpus)
+    if len(links) == 0:
+        eq_probability = 1 / len_corpus
+        for k, _v in corpus.items():
+            prob_distribution[k] = eq_probability
+        return prob_distribution
+
+    # divide probability of 0.85 amongst linked pages
+    dampening_factor_choices = damping_factor / len(corpus[page])
+
+    # divide remainder percentages amongst all pages 0.15
+    remainder_dampening = (1 - damping_factor) / len_corpus #
+
+    # distribute probabilities
+    for k, v in corpus.items():
+
+        # looping through the corpus if key in the current pages
+        if k in corpus[page]:
+            prob_distribution[k] = dampening_factor_choices + remainder_dampening
+            continue
+        # else just add the dampening remainder
+        prob_distribution[k] = remainder_dampening
+
+    return prob_distribution
 
 
 def sample_pagerank(corpus, damping_factor, n):
