@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+import numpy as np
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -82,7 +83,7 @@ def transition_model(corpus, page, damping_factor):
     remainder_dampening = (1 - damping_factor) / len_corpus #
 
     # distribute probabilities
-    for k, v in corpus.items():
+    for k, _v in corpus.items():
 
         # looping through the corpus if key in the current pages
         if k in corpus[page]:
@@ -103,7 +104,34 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    count = 0
+    page_frequency = {key: 0 for key in corpus.keys()} # copy all keys from corpus and set all values to 0
+    random_page = ""
+
+    while count < n:
+        
+        # on first pass, choose random page
+        if count == 0:
+            # random choice
+            random_page = random.choice(list(corpus.keys()))
+            # add page as key and number of times accessed as count, in the end we will divide by the num of samples
+            page_frequency[random_page] += 1
+            count += 1
+            continue
+        
+        prob_dist = transition_model(corpus=corpus, page=random_page, damping_factor=damping_factor)
+        page_keys = list(prob_dist.keys())
+        page_values = list(prob_dist.values())
+        random_page = np.random.choice(keys=page_keys, p=page_values)
+        page_frequency[random_page] += 1
+        count += 1
+    
+    samples = {}
+    for key, value in page_frequency:
+        samples[key] = value / n
+    
+    return samples
+
 
 
 def iterate_pagerank(corpus, damping_factor):

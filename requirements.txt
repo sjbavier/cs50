@@ -15,6 +15,7 @@ Jinja2==3.1.4
 jsbeautifier==1.15.1
 lib50==3.0.11
 MarkupSafe==2.1.5
+numpy==2.2.0
 packaging==24.1
 pexpect==4.9.0
 pillow==10.4.0
