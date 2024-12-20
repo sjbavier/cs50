@@ -128,7 +128,7 @@ def sample_pagerank(corpus, damping_factor, n):
     
     samples = {}
     for key, value in page_frequency:
-        samples[key] = value / n
+        samples[key] = value / n # aggregation of values should be n
     
     return samples
 
@@ -143,7 +143,21 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    len_corpus = len( corpus )
+    page_ranks = {}
+    damping_const = 1 - damping_factor / len(corpus)
+    convergence = False
+    threshold = .001
+    
+    while not convergence:
+        for page in corpus:
+            for second_page in corpus:
+                if page in second_page:
+                    
+
+    
+
+
 
 
 if __name__ == "__main__":
