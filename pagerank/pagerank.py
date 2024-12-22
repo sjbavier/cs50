@@ -80,7 +80,7 @@ def transition_model(corpus, page, damping_factor):
     dampening_factor_choices = damping_factor / len(corpus[page])
 
     # divide remainder percentages amongst all pages 0.15
-    remainder_dampening = (1 - damping_factor) / len_corpus #
+    remainder_dampening = (1 - damping_factor) / len_corpus  #
 
     # distribute probabilities
     for k, _v in corpus.items():
@@ -105,33 +105,34 @@ def sample_pagerank(corpus, damping_factor, n):
     PageRank values should sum to 1.
     """
     count = 0
-    page_frequency = {key: 0 for key in corpus.keys()} # copy all keys from corpus and set all values to 0
+    page_frequency = {key: 0 for key in corpus.keys()}  # copy all keys from corpus and set all values to 0
     random_page = ""
 
     while count < n:
-        
+
         # on first pass, choose random page
         if count == 0:
             # random choice
             random_page = random.choice(list(corpus.keys()))
+            print(f'page from sample random:  {random_page}')
             # add page as key and number of times accessed as count, in the end we will divide by the num of samples
             page_frequency[random_page] += 1
             count += 1
             continue
-        
+
         prob_dist = transition_model(corpus=corpus, page=random_page, damping_factor=damping_factor)
         page_keys = list(prob_dist.keys())
         page_values = list(prob_dist.values())
-        random_page = np.random.choice(keys=page_keys, p=page_values)
+        random_page = np.random.choice(page_keys,  p=page_values)
+        print(f'random page: {random_page}')
         page_frequency[random_page] += 1
         count += 1
-    
-    samples = {}
-    for key, value in page_frequency:
-        samples[key] = value / n # aggregation of values should be n
-    
-    return samples
 
+    samples = {}
+    for key, value in page_frequency.items():
+        samples[key] = value / n  # aggregation of values should be n
+
+    return samples
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -143,21 +144,41 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    len_corpus = len( corpus )
-    page_ranks = {}
-    damping_const = 1 - damping_factor / len(corpus)
+    len_corpus = len(corpus)
+    damping_const = 1 - damping_factor / len_corpus
+    page_ranks = {page: 1 / len_corpus for page in corpus} # initial assignment of 1/N
     convergence = False
-    threshold = .001
-    
+    threshold = 0.001
+
     while not convergence:
+        threshold_ranks = {}
+
+        # compute page_ranks that do not have outbound links
+        # no_outbound_rank = sum(page_ranks[page_i] for page_i in corpus if len(corpus[page_i]) == 0)
+
         for page in corpus:
-            for second_page in corpus:
-                if page in second_page:
-                    
+            cumulative_contribution = 0
 
-    
+            # for possible incoming page_i
+            for page_i in corpus:
+                # if the page is in the dictionary of possible links sum the contribution with the
+                # PR(i) probably we are on page_i divided by the number of links on that page_i
+                if page in corpus[page_i]:
+                    cumulative_contribution += page_ranks[page_i] / len(corpus[page_i])
 
+            new_rank = damping_const + damping_factor * cumulative_contribution
+            threshold_ranks[page] = new_rank
+            print(f'threshold_ranks: {threshold_ranks}')
 
+        convergence = True
+        for page in page_ranks:
+            if abs(threshold_ranks[page] - page_ranks[page]) > threshold:
+                convergence = False
+                break
+
+        # update page_ranks
+        page_ranks = threshold_ranks
+    return page_ranks
 
 
 if __name__ == "__main__":
