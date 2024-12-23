@@ -158,6 +158,7 @@ def iterate_pagerank(corpus, damping_factor):
 
         for page in corpus:
             cumulative_contribution = 0
+            cumulative_num_links = 0
 
             # for possible incoming page_i
             for page_i in corpus:
@@ -165,10 +166,13 @@ def iterate_pagerank(corpus, damping_factor):
                 # PR(i) probably we are on page_i divided by the number of links on that page_i
                 if page in corpus[page_i]:
                     cumulative_contribution += page_ranks[page_i] / len(corpus[page_i])
+                    cumulative_num_links += 1
+
+                    print(f'cumu: {cumulative_contribution} num_links: {cumulative_num_links}')
 
             new_rank = damping_const + damping_factor * cumulative_contribution
             threshold_ranks[page] = new_rank
-            print(f'threshold_ranks: {threshold_ranks}')
+            print(f'threshold_ranks: {threshold_ranks} \npage_ranks: {page_ranks}')
 
         convergence = True
         for page in page_ranks:
