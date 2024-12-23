@@ -145,7 +145,7 @@ def iterate_pagerank(corpus, damping_factor):
     PageRank values should sum to 1.
     """
     len_corpus = len(corpus)
-    damping_const = 1 - damping_factor / len_corpus
+    damping_const = (1 - damping_factor) / len_corpus
     page_ranks = {page: 1 / len_corpus for page in corpus} # initial assignment of 1/N
     convergence = False
     threshold = 0.001
@@ -153,26 +153,22 @@ def iterate_pagerank(corpus, damping_factor):
     while not convergence:
         threshold_ranks = {}
 
-        # compute page_ranks that do not have outbound links
-        # no_outbound_rank = sum(page_ranks[page_i] for page_i in corpus if len(corpus[page_i]) == 0)
-
         for page in corpus:
-            cumulative_contribution = 0
-            cumulative_num_links = 0
 
+            cumulative_contribution = 0
             # for possible incoming page_i
             for page_i in corpus:
                 # if the page is in the dictionary of possible links sum the contribution with the
-                # PR(i) probably we are on page_i divided by the number of links on that page_i
                 if page in corpus[page_i]:
                     cumulative_contribution += page_ranks[page_i] / len(corpus[page_i])
-                    cumulative_num_links += 1
 
-                    print(f'cumu: {cumulative_contribution} num_links: {cumulative_num_links}')
+                    print(f'cumu: {cumulative_contribution}  page_ranks_i: {page_ranks[page_i]} len_corpus page_i: {len(corpus[page_i])}')
+                
 
             new_rank = damping_const + damping_factor * cumulative_contribution
+            # print(f'damping_const {damping_const} damping_factor {damping_factor} cumulative_contribution: {cumulative_contribution}')
             threshold_ranks[page] = new_rank
-            print(f'threshold_ranks: {threshold_ranks} \npage_ranks: {page_ranks}')
+            # print(f'threshold_ranks: {threshold_ranks} \npage_ranks: {page_ranks}')
 
         convergence = True
         for page in page_ranks:
