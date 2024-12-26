@@ -164,7 +164,7 @@ def iterate_pagerank(corpus, damping_factor):
 
                     print(f'cumu: {cumulative_contribution}  page_ranks_i: {page_ranks[page_i]} len_corpus page_i: {len(corpus[page_i])}')
                 
-                if page in len( corpus[page_i] == 0 ):
+                elif page in len( corpus[page_i] == 0 ):
                     cumulative_contribution += corpus[page_i] / len_corpus
 
             new_rank = damping_const + damping_factor * cumulative_contribution
