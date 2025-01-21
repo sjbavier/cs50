@@ -139,7 +139,49 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    raise NotImplementedError
+    joint_prb = float
+    for person in people:
+        gene_prob = 0.00
+        trait_prob = 0.00
+        if person in one_gene:
+            # select gene probability
+            gene_prob = PROBS["gene"][1]
+            # select trait probability
+            if person in have_trait:
+                trait_prob = PROBS["trait"][1][True]
+            else:
+                trait_prob = PROBS["trait"][1][False]
+        elif person in two_genes:
+            # select gene probability
+            gene_prob = PROBS["gene"][2]
+            # select trait probability
+            if person in have_trait:
+                trait_prob = PROBS["trait"][2][True]
+            else:
+                trait_prob = PROBS["trait"][2][False]
+        else:
+            # select gene probability
+            gene_prob = PROBS["gene"][0]
+            # select trait probability
+            if person in have_trait:
+                trait_prob = PROBS["trait"][0][True]
+            else:
+                trait_prob = PROBS["trait"][0][False]
+
+
+
+    print(f'people: {people} one_gene: {one_gene} two_gene: {two_genes} have_trait: {have_trait} ')
+
+def compute_trait_probability(people, person, genes, have_trait):
+    trait_prob = 0.00
+    if people[person]['father'] is not None and people[person]['mother'] is not None:
+
+    if person in have_trait:
+        trait_prob = PROBS["trait"][genes][True]
+    else:
+        trait_prob = PROBS["trait"][genes][False]
+
+
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
