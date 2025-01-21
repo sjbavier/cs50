@@ -140,7 +140,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone not in set` have_trait` does not have the trait.
     """
     print(f'people: {people} one_gene: {one_gene} two_gene: {two_genes} have_trait: {have_trait} ')
-    joint_prb = float
+    joint_prb = 1.0
     for person in people:
         gene_prob = 0.00
         trait_prob = 0.00
@@ -194,14 +194,10 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         trait_prob = PROBS["trait"][person_genes][person_trait]
         person_prob = gene_prob * trait_prob
 
-        # update joint_probabilty
+        # update joint_probability
         joint_prb = joint_prb * person_prob
 
     return joint_prb
-
-
-
-
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
     """
