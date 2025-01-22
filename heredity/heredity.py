@@ -157,45 +157,40 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         else:
             person_genes = 0
 
-        parent_prob = 0
+        parent_prob = None
         if people[person]['father'] is not None and people[person]['mother'] is not None:
-            parent_prob = True
-            father_prob = 0.00
-            mother_prob = 0.00
-            if people[person]['father'] in one_gene:
-                father_prob = 0.5
-            if people[person]['mother'] in one_gene:
-                mother_prob = 0.5
-            if people[person]['father'] in two_genes:
-                father_prob = 1 - PROBS['mutation']
-            if people[person]['mother'] in two_genes:
-                mother_prob = 1 - PROBS['mutation']
-            if people[person]['father'] not in two_genes and people[person]['father'] not in two_genes:
-                father_prob = PROBS['mutation']
-            if people[person]['mother'] not in two_genes and people[person]['mother'] not in two_genes:
-                mother_prob = PROBS['mutation']
+            def parent_gene_prob(parent):
+                if parent in one_gene:
+                    return 0.5
+                elif parent in two_genes:
+                    return 1 - PROBS['mutation']
+                # parent has no genes return possible mutation probability
+                else:
+                    return PROBS['mutation']
 
-            if person_genes == 0:
-                # father doesn't pass gene and mother doesn't either
-                parent_prob = (1 - father_prob) * (1 - mother_prob)
+            father_prob = parent_gene_prob(people[person]['father'])
+            mother_prob = parent_gene_prob(people[person]['mother'])
+
+            if person_genes == 2:
+                # father passes and mother passes
+                parent_prob = father_prob * mother_prob
             elif person_genes == 1:
                 # sum of mother passing gene and father not and father passing gene and mother not
                 parent_prob = (mother_prob * (1 - father_prob)) + (father_prob * (1 - mother_prob))
             else:
-                # father passes and mother passes
-                parent_prob = father_prob * mother_prob
+                # father doesn't pass gene and mother doesn't either
+                parent_prob = (1 - father_prob) * (1 - mother_prob)
 
         # select gene probability
-        if parent_prob != 0:
+        if parent_prob is not None:
             gene_prob = parent_prob
         else:
             gene_prob = PROBS["gene"][person_genes]
         # select trait probability
         trait_prob = PROBS["trait"][person_genes][person_trait]
-        person_prob = gene_prob * trait_prob
 
         # update joint_probability
-        joint_prb = joint_prb * person_prob
+        joint_prb *= (gene_prob * trait_prob)
 
     return joint_prb
 
