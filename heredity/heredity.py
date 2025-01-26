@@ -194,6 +194,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
 
     return joint_prb
 
+
 def update(probabilities, one_gene, two_genes, have_trait, p):
     """
     Add to `probabilities` a new joint probability `p`.
@@ -201,7 +202,22 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    raise NotImplementedError
+    print(f'probabilities: {probabilities}')
+    for person in probabilities:
+        person_trait = False
+        if person in have_trait:
+            person_trait = True
+
+        person_genes = 0
+        if person in one_gene:
+            person_genes = 1
+        elif person in two_genes:
+            person_genes = 2
+        else:
+            person_genes = 0
+
+        probabilities[person]["gene"][person_genes] = (probabilities[person]["gene"][person_genes] + p) / 2
+        probabilities[person]["trait"][person_trait] = (probabilities[person]["trait"][person_trait] + p) / 2
 
 
 def normalize(probabilities):
@@ -209,8 +225,23 @@ def normalize(probabilities):
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
+    print(f'probabilities: {probabilities}')
 
+    for person in probabilities:
+        total_probs = 0
+        multiply_by = 0
+        for gene in person["gene"]:
+            total_probs += gene
+        for trait in person["trait"]:
+            total_probs += trait
+
+        if total_probs <= 1:
+            multiply_by = 1 / total_probs
+
+        for i, gene in enumerate(["gene"]):
+            probabilities[person]["gene"][i] = probabilities[person]["gene"][i] * multiply_by
+        for trait in person["trait"]:
+            total_probs += trait
 
 if __name__ == "__main__":
     main()
