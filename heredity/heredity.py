@@ -238,6 +238,5 @@ def normalize(probabilities):
             probabilities[person]["trait"][person_traits] /= total_traits
 
 
-
 if __name__ == "__main__":
     main()
