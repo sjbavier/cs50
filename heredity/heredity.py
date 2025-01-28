@@ -216,8 +216,8 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
         else:
             person_genes = 0
 
-        probabilities[person]["gene"][person_genes] = (probabilities[person]["gene"][person_genes] + p) / 2
-        probabilities[person]["trait"][person_trait] = (probabilities[person]["trait"][person_trait] + p) / 2
+        probabilities[person]["gene"][person_genes] += p
+        probabilities[person]["trait"][person_trait] += p
 
 
 def normalize(probabilities):
@@ -228,20 +228,16 @@ def normalize(probabilities):
     print(f'probabilities: {probabilities}')
 
     for person in probabilities:
-        total_probs = 0
-        multiply_by = 0
-        for gene in person["gene"]:
-            total_probs += gene
-        for trait in person["trait"]:
-            total_probs += trait
+        total_genes = sum(probabilities[person]["gene"].values())
+        total_traits = sum(probabilities[person]["trait"].values())
 
-        if total_probs <= 1:
-            multiply_by = 1 / total_probs
+        for person_genes in probabilities[person]["gene"]:
+            probabilities[person]["gene"][person_genes] /= total_genes
 
-        for i, gene in enumerate(["gene"]):
-            probabilities[person]["gene"][i] = probabilities[person]["gene"][i] * multiply_by
-        for trait in person["trait"]:
-            total_probs += trait
+        for person_traits in probabilities[person]["trait"]:
+            probabilities[person]["trait"][person_traits] /= total_traits
+
+
 
 if __name__ == "__main__":
     main()
