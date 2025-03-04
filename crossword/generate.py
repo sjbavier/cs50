@@ -105,8 +105,7 @@ class CrosswordCreator():
                 if len(word) != k.length:
                     v.remove(word)
                     print(f'removing word: {word}')
-            print(f'key: {k}, value: {v}')
-
+                    print(f'key: {k}, value: {v}')
         print(f'domains after: {self.domains}')
 
     def revise(self, x, y):
@@ -117,8 +116,33 @@ class CrosswordCreator():
 
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
+
+        revised = False
+        for x in x.domain:
+            if no y in y.domain satisfies constraint for (x,y):
+                delete x from x.domain
+                revised = True
+
         """
-        raise NotImplementedError
+        # instantiate as False
+        revised = False
+
+        overlaps = self.crossword.overlaps[x, y]
+        if overlaps is None:
+            return revised
+
+        for xword in self.domains[x].copy():
+            # check overlaps for arc consistency
+            i, j = overlaps
+            # if any word in y's domain that matches the letter
+            if not any(xword[i] == yword[j] for yword in self.domains[y]):
+                self.domains[x].remove(xword)
+                revised = True
+            revised = True
+
+        print(f'overlaps {overlaps}')
+        print(f'revise {x}, {y}')
+        return revised
 
     def ac3(self, arcs=None):
         """
@@ -128,8 +152,35 @@ class CrosswordCreator():
 
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
+
+        queue = all arcs in csp
+        while queue is not empty:
+            (x, y) = Dequeue(queue)
+            if Revise(csp, x y):
+                if size of x.domain == 0:
+                    return False
+                for each Z in x.neighbors = {y}:
+                    Enqueue(queue, (Z, X))
+        return True
         """
-        raise NotImplementedError
+        if arcs is None:
+            # grab all arcs to start?
+            arcs = self.domains().copy()
+
+        while len(arcs) != 0:
+            # using a list to remove element at the end
+            x, y = arcs.pop()
+
+            if self.revise(x, y):
+                if len(self.domains[x]) == 0:
+                    return False
+                # neighbors of x without y if it exists
+                neighbors = self.crossword.neighbors(x).remove(y)
+                for z in neighbors:
+                    # insert element at front of list for the backwards queue
+                    arcs.insert(0, (z, x))
+
+        return True
 
     def assignment_complete(self, assignment):
         """
