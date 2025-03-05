@@ -164,10 +164,16 @@ class CrosswordCreator():
         return True
         """
         if arcs is None:
-            # grab all arcs to start?
-            arcs = self.domains().copy()
+            arcs = []
+            # create a list of arcs from all variables and their neighbors
+            for x in self.crossword.variables():
+                for y in self.crossword.neighbors(x):
+                    arcs.append((x, y))
+        else:
+            # ensure arcs is a list
+            arcs = list(arcs)
 
-        while len(arcs) != 0:
+        while arcs:
             # using a list to remove element at the end
             x, y = arcs.pop()
 
@@ -175,7 +181,7 @@ class CrosswordCreator():
                 if len(self.domains[x]) == 0:
                     return False
                 # neighbors of x without y if it exists
-                neighbors = self.crossword.neighbors(x).remove(y)
+                neighbors = self.crossword.neighbors(x).copy().discard(y)
                 for z in neighbors:
                     # insert element at front of list for the backwards queue
                     arcs.insert(0, (z, x))
