@@ -166,7 +166,7 @@ class CrosswordCreator():
         if arcs is None:
             arcs = []
             # create a list of arcs from all variables and their neighbors
-            for x in self.crossword.variables():
+            for x in self.crossword.variables:
                 for y in self.crossword.neighbors(x):
                     arcs.append((x, y))
         else:
@@ -182,9 +182,10 @@ class CrosswordCreator():
                     return False
                 # neighbors of x without y if it exists
                 neighbors = self.crossword.neighbors(x).copy().discard(y)
-                for z in neighbors:
-                    # insert element at front of list for the backwards queue
-                    arcs.insert(0, (z, x))
+                if neighbors is not None:
+                    for z in neighbors:
+                        # insert element at front of list for the backwards queue
+                        arcs.insert(0, (z, x))
 
         return True
 
@@ -193,7 +194,14 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        raise NotImplementedError
+        print(f'assignment: {assignment}')
+        for var in self.crossword.variables:
+            if var not in assignment or assignment[var] is None:
+                return False
+
+        return True
+
+
 
     def consistent(self, assignment):
         """
@@ -204,7 +212,7 @@ class CrosswordCreator():
 
     def order_domain_values(self, var, assignment):
         """
-        Return a list of values in the domain of `var`, in order by
+        Return a list of values in the domain of `var`, in order by 
         the number of values they rule out for neighboring variables.
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
