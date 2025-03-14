@@ -232,7 +232,15 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        raise NotImplementedError
+        # TODO remove this: 
+        return list(self.domains[var])
+        possible_values = set(self.domains[var])
+        # eliminate values from var's values that are in assignment
+        for word in list(self.domains[var]):
+            if word not in assignment.values():
+                possible_values.add(word)
+
+        for neighbor in self.crossword.neighbors(var):
 
     def select_unassigned_variable(self, assignment):
         """
