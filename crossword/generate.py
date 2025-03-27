@@ -254,9 +254,7 @@ class CrosswordCreator():
                                 total += 1
             return total
 
-        possible_values.sort(key=count_invalidated)
-
-
+        return possible_values.sort(key=count_invalidated)
 
     def select_unassigned_variable(self, assignment):
         """
@@ -266,7 +264,20 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        raise NotImplementedError
+        min_remaining = self.domains.copy()
+
+        def sort_min_remaining(var, domain):
+            count = 0
+            for value in domain not in assignment:
+                count += 1
+            min_remaining[var] = count
+
+        sorted(min_remaining, key=sort_min_remaining)
+
+
+
+
+
 
     def backtrack(self, assignment):
         """
