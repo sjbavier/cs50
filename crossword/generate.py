@@ -266,13 +266,17 @@ class CrosswordCreator():
         """
         min_remaining = self.domains.copy()
 
+        unassigned_options = [value for value in self.crossword.variables
+                              if value not in assignment]
+
         def sort_min_remaining(var, domain):
             count = 0
             for value in domain not in assignment:
                 count += 1
             min_remaining[var] = count
 
-        sorted(min_remaining, key=sort_min_remaining)
+        sorted_min_remaining = sorted(min_remaining, key=sort_min_remaining)
+        return self.domains[min_remaining_var]
 
 
 
