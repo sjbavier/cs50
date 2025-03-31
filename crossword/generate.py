@@ -207,22 +207,34 @@ class CrosswordCreator():
         puzzle without conflicting characters); return False otherwise.
         """
 
-        # check for correct variable length
-        for var, value in assignment.items():
-            for word in list(value):
-                if len(word) != var.length:
-                    return False
+        # 1. Check each assigned variable has the correct word length
+        for var, word in assignment.items():
+            if len(word) != var.length:
+                return False
 
-        # check for distinct values
-        if (len(set(assignment.values())) != len(list(assignment.values()))):
+        # 2. Check all assigned words are distinct
+        words = list(assignment.values())
+        if len(set(words)) != len(words):
             return False
 
+        # 3. Check all overlaps for consistency
         for var1 in assignment:
             for var2 in assignment:
-                overlaps = self.crossword.overlaps[var1, var2]
-                i, j = overlaps
-                if var1[i] != var2[j]:
+                if var1 == var2:
+                    continue
+
+                overlap = self.crossword.overlaps[var1, var2]
+                # If there's no overlap, skip
+                if overlap is None:
+                    continue
+
+                i, j = overlap
+                word1 = assignment[var1]
+                word2 = assignment[var2]
+                # If the characters don't match, not consistent
+                if word1[i] != word2[j]:
                     return False
+
         return True
 
     def order_domain_values(self, var, assignment):
