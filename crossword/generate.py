@@ -266,22 +266,21 @@ class CrosswordCreator():
         """
         min_remaining = self.domains.copy()
 
-        unassigned_options = [value for value in self.crossword.variables
-                              if value not in assignment]
-
         def sort_min_remaining(var, domain):
             count = 0
             for value in domain not in assignment:
                 count += 1
             min_remaining[var] = count
 
-        sorted_min_remaining = sorted(min_remaining, key=sort_min_remaining)
-        return self.domains[min_remaining_var]
+        sorted_min_remaining = dict(sorted(min_remaining, key=sort_min_remaining))
 
+        def degree(value):
+            return len(self.crossword.neighbors(value))
 
-
-
-
+        if list(sort_min_remaining.keys()[0] == sort_min_remaining.keys()[1]):  # tie
+            return dict(sorted(sorted_min_remaining, key=-degree)).keys()[0]
+        else:
+            return sort_min_remaining.keys()[0]
 
     def backtrack(self, assignment):
         """
@@ -292,7 +291,24 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        raise NotImplementedError
+        if self.assignment_complete(assignment):
+            return assignment
+
+        unassigned_var = self.select_unassigned_variable(assignment)
+
+        for value in self.order_domain_values(unassigned_var, assignment):
+            assignment[unassigned_var] = value
+
+            if self.consistent(assignment):
+                output = self.backtrack(assignment)
+                if output is not None:
+                    return output
+
+            del assignment[unassigned_var]
+
+        # no assignment 
+        return None
+
 
 
 def main():
