@@ -289,7 +289,8 @@ class CrosswordCreator():
 
         # Sort by (domain_size, -degree)
         unassigned.sort(key=lambda v: (domain_size(v), -degree(v)))
-        return unassigned[0]
+
+        return unassigned[0] if len(unassigned) > 0 else None
 
     def backtrack(self, assignment):
         """
