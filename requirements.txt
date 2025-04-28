@@ -12,6 +12,7 @@ icdiff==2.0.7
 idna==3.8
 jellyfish==0.11.2
 Jinja2==3.1.4
+joblib==1.4.2
 jsbeautifier==1.15.1
 lib50==3.0.11
 MarkupSafe==2.1.5
@@ -26,10 +27,13 @@ pygame==2.6.0
 python-magic==0.4.27
 PyYAML==6.0.2
 requests==2.32.3
+scikit-learn==1.6.1
+scipy==1.15.2
 setuptools==74.0.0
 six==1.16.0
 soupsieve==2.6
 style50==2.10.4
 submit50==3.1.5
 termcolor==1.1.0
+threadpoolctl==3.6.0
 urllib3==2.2.2
