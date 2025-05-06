@@ -3,6 +3,7 @@ import sys
 
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from datetime import datetime
 
 TEST_SIZE = 0.4
 
@@ -30,6 +31,42 @@ def main():
     print(f"True Positive Rate: {100 * sensitivity:.2f}%")
     print(f"True Negative Rate: {100 * specificity:.2f}%")
 
+def map_data(shopping_row):
+    row_evidence = list(shopping_row[0:17])
+    row_labels = 1 if shopping_row[17].upper() == 'TRUE' else 0
+
+    normalized_row_evidence = []
+    index_single_decimal = [1, 3, 5, 6, 7, 8, 9]
+    index_month = [10]
+    index_visitor_type = [15]
+    index_weekend = [16]
+    for index, cell in enumerate( row_evidence ):
+        # round to 1 decimal for floats
+        if index in index_single_decimal:
+            normalized_row_evidence.append(round(float(cell), 1))
+            continue
+
+        # convert month to int
+        if index in index_month:
+            date_format = "%b"
+            normalized_row_evidence.append(datetime.strptime(cell, date_format).month)
+            continue
+
+        # visitor vs non-visitor to int
+        if index in index_visitor_type:
+            normalized_row_evidence.append(1 if cell == 'Returning_Visitor' else 0)
+            continue
+
+        # weekend visit to int
+        if index in index_weekend:
+            normalized_row_evidence.append(1 if cell.upper() == 'TRUE' else 0)
+            continue
+
+        # all else should be ints?
+        normalized_row_evidence.append(int(cell))
+
+    print(f"Evidence: {normalized_row_evidence} labels: {row_labels}")
+    return normalized_row_evidence, row_labels
 
 def load_data(filename):
     """
@@ -59,16 +96,14 @@ def load_data(filename):
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-    evidence = list()
+    normalized_data = list()
     with open(filename) as f:
         reader = csv.reader(f)
         for index, row in enumerate(reader):
             if index != 0:
-                row_evidence = list(row[0:17])
-                row_labels = 1 if row[17].upper() == 'TRUE' else 0
-                evidence.append((row_evidence, row_labels))
+                normalized_data.append(map_data(row))
 
-    print(f'Evidence: {evidence}')
+    return normalized_data
 
 
 
