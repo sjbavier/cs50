@@ -40,7 +40,7 @@ def map_data(shopping_row):
     index_month = [10]
     index_visitor_type = [15]
     index_weekend = [16]
-    for index, cell in enumerate( row_evidence ):
+    for index, cell in enumerate(row_evidence):
         # round to 1 decimal for floats
         if index in index_single_decimal:
             normalized_row_evidence.append(round(float(cell), 1))
@@ -49,7 +49,7 @@ def map_data(shopping_row):
         # convert month to int
         if index in index_month:
             date_format = "%b"
-            normalized_row_evidence.append(datetime.strptime(cell, date_format).month)
+            normalized_row_evidence.append(datetime.strptime(cell[:3], date_format).month)
             continue
 
         # visitor vs non-visitor to int
@@ -65,7 +65,7 @@ def map_data(shopping_row):
         # all else should be ints?
         normalized_row_evidence.append(int(cell))
 
-    print(f"Evidence: {normalized_row_evidence} labels: {row_labels}")
+    # print(f"Evidence: {normalized_row_evidence} labels: {row_labels}")
     return normalized_row_evidence, row_labels
 
 def load_data(filename):
@@ -96,14 +96,21 @@ def load_data(filename):
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-    normalized_data = list()
+    normalized_evidence = list()
+    normalized_labels = list()
     with open(filename) as f:
         reader = csv.reader(f)
+        next(reader)
         for index, row in enumerate(reader):
-            if index != 0:
-                normalized_data.append(map_data(row))
-
-    return normalized_data
+            try:
+                row_evidence, row_labels = map_data(row)
+                # print(f"Success reading row {index}: {row}")
+            except ValueError:
+                print(f"Error reading row {index}: {row}")
+            normalized_evidence.append(row_evidence)
+            normalized_labels.append(row_labels)
+    # print(f"evidence {normalized_evidence}, labels:{normalized_labels}")
+    return normalized_evidence, normalized_labels
 
 
 
@@ -113,7 +120,7 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
+    # print(f"evidence: {evidence} \nlabel: {labels}")
 
 
 def evaluate(labels, predictions):
