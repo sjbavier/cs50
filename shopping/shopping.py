@@ -41,15 +41,16 @@ def map_data(shopping_row):
     index_visitor_type = [15]
     index_weekend = [16]
     for index, cell in enumerate(row_evidence):
-        # round to 1 decimal for floats
+        # round to 2 decimal for floats
         if index in index_single_decimal:
-            normalized_row_evidence.append(round(float(cell), 1))
+            normalized_row_evidence.append(round(float(cell), 2))
             continue
 
         # convert month to int
         if index in index_month:
             date_format = "%b"
-            normalized_row_evidence.append(datetime.strptime(cell[:3], date_format).month)
+            m = datetime.strptime(cell[:3], date_format).month
+            normalized_row_evidence.append(m - 1)
             continue
 
         # visitor vs non-visitor to int
@@ -107,6 +108,7 @@ def load_data(filename):
                 # print(f"Success reading row {index}: {row}")
             except ValueError:
                 print(f"Error reading row {index}: {row}")
+                continue
             normalized_evidence.append(row_evidence)
             normalized_labels.append(row_labels)
     # print(f"evidence {normalized_evidence}, labels:{normalized_labels}")
@@ -120,7 +122,9 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    # print(f"evidence: {evidence} \nlabel: {labels}")
+
+    k = KNeighborsClassifier(n_neighbors=1)
+    return k.fit(evidence, labels)
 
 
 def evaluate(labels, predictions):
@@ -138,7 +142,23 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-    raise NotImplementedError
+    true_positive = true_negative = false_positive = false_negative = 0
+    total = 0
+    for actual, predicted  in zip(labels, predictions):
+        total += 1
+        if actual == 1:
+            if predicted == 1: true_positive += 1
+            else: false_negative += 1
+        else:
+            if predicted == 0: true_negative += 1
+            else: false_positive += 1
+
+
+    sensitivity = true_positive / (true_positive + false_negative) if (true_positive + false_negative) else 0
+    specificity = true_negative / (true_negative + false_positive) if (true_negative + false_positive) else 0
+
+    return (sensitivity, specificity)
+
 
 
 if __name__ == "__main__":
