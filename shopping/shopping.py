@@ -31,6 +31,7 @@ def main():
     print(f"True Positive Rate: {100 * sensitivity:.2f}%")
     print(f"True Negative Rate: {100 * specificity:.2f}%")
 
+
 def map_data(shopping_row):
     row_evidence = list(shopping_row[0:17])
     row_labels = 1 if shopping_row[17].upper() == 'TRUE' else 0
@@ -68,6 +69,7 @@ def map_data(shopping_row):
 
     # print(f"Evidence: {normalized_row_evidence} labels: {row_labels}")
     return normalized_row_evidence, row_labels
+
 
 def load_data(filename):
     """
@@ -115,8 +117,6 @@ def load_data(filename):
     return normalized_evidence, normalized_labels
 
 
-
-
 def train_model(evidence, labels):
     """
     Given a list of evidence lists and a list of labels, return a
@@ -153,12 +153,10 @@ def evaluate(labels, predictions):
             if predicted == 0: true_negative += 1
             else: false_positive += 1
 
-
     sensitivity = true_positive / (true_positive + false_negative) if (true_positive + false_negative) else 0
     specificity = true_negative / (true_negative + false_positive) if (true_negative + false_positive) else 0
 
     return (sensitivity, specificity)
-
 
 
 if __name__ == "__main__":
