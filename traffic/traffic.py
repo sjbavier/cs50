@@ -37,7 +37,6 @@ def main():
     # test model summary
     model.summary()
 
-
     # Fit model on training data
     model.fit(x_train, y_train, epochs=EPOCHS)
 
