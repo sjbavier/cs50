@@ -15,11 +15,22 @@ V -> "smiled" | "tell" | "were"
 """
 
 NONTERMINALS = """
-S -> N V
 S -> NP VP
+S -> S Conj S
+S -> VP
 
-NP -> D N | N | D N PP | NP PP | P
-VP -> V | V NP | V NP PP | VP PP
+NP -> Det N
+NP -> Det Adj N
+NP -> Det Adj Adj N
+NP -> N
+NP -> NP PP
+NP -> NP Conj NP
+
+VP -> V
+VP -> V NP
+VP -> V NP PP
+VP -> V PP
+VP -> VP Conj VP
 
 PP -> P NP
 
@@ -71,9 +82,9 @@ def preprocess(sentence):
     """
     # split by spaces
     word_list = nltk.tokenize.word_tokenize(sentence)
-    print(f"this is the tokenize shit \n{word_list}")
+    print(f"this is the tokenize \n{word_list}")
     # instantiate list of string
-    alpha_wl = list[""]
+    alpha_wl = list()
     for word in word_list:
         # if the word has at least one alpha character
         if any(char.isalpha() for char in word):
@@ -89,7 +100,13 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    raise NotImplementedError
+    np_chunks = []
+    for subtree in tree.subtrees():
+        if subtree.label() == "NP":
+            # Check if there are no NP subtrees inside this NP (except itself)
+            if not any(child.label() == "NP" for child in subtree.subtrees(lambda t: t != subtree)):
+                np_chunks.append(subtree)
+    return np_chunks
 
 
 if __name__ == "__main__":
