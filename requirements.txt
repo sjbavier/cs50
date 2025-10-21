@@ -11,11 +11,15 @@ clang-format==19.1.1
 click==8.3.0
 cryptography==43.0.0
 EditorConfig==0.12.4
+filelock==3.20.0
 flatbuffers==25.2.10
+fsspec==2025.9.0
 gast==0.6.0
 google-pasta==0.2.0
 grpcio==1.73.1
 h5py==3.14.0
+hf-xet==1.1.10
+huggingface-hub==0.35.3
 icdiff==2.0.7
 idna==3.8
 jellyfish==0.11.2
@@ -50,6 +54,7 @@ PyYAML==6.0.2
 regex==2025.9.18
 requests==2.32.3
 rich==14.0.0
+safetensors==0.6.2
 scikit-learn==1.6.1
 scipy==1.15.2
 setuptools==74.0.0
@@ -62,7 +67,9 @@ tensorboard-data-server==0.7.2
 tensorflow==2.19.0
 termcolor==1.1.0
 threadpoolctl==3.6.0
+tokenizers==0.22.1
 tqdm==4.67.1
+transformers==4.57.0
 typing_extensions==4.14.1
 urllib3==2.2.2
 Werkzeug==3.1.3
