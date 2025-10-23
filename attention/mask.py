@@ -2,7 +2,8 @@ import sys
 import tensorflow as tf
 
 from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoTokenizer, TFBertForMaskedLM
+from transformers import AutoTokenizer, AutoModelForMaskedLM
+import torch
 
 # Pre-trained masked language model
 MODEL = "bert-base-uncased"
@@ -21,23 +22,27 @@ def main():
 
     # Tokenize input
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
-    inputs = tokenizer(text, return_tensors="tf")
+    inputs = tokenizer(text, return_tensors="pt")
     mask_token_index = get_mask_token_index(tokenizer.mask_token_id, inputs)
     if mask_token_index is None:
         sys.exit(f"Input must include mask token {tokenizer.mask_token}.")
 
     # Use model to process input
-    model = TFBertForMaskedLM.from_pretrained(MODEL)
-    result = model(**inputs, output_attentions=True)
+    model = AutoModelForMaskedLM.from_pretrained(MODEL)
+    model.eval()
+    with torch.no_grad():
+        result = model(**inputs, output_attentions=True)
 
     # Generate predictions
     mask_token_logits = result.logits[0, mask_token_index]
-    top_tokens = tf.math.top_k(mask_token_logits, K).indices.numpy()
+    # top_tokens = tf.math.top_k(mask_token_logits, K).indices.numpy()
+    top_tokens = torch.top_k(mask_token_logits, K).indices.numpy()
     for token in top_tokens:
         print(text.replace(tokenizer.mask_token, tokenizer.decode([token])))
 
     # Visualize attentions
-    visualize_attentions(inputs.tokens(), result.attentions)
+    tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0].tolist())
+    visualize_attentions(tokens, result.attentions)
 
 
 def get_mask_token_index(mask_token_id, inputs):
@@ -46,17 +51,12 @@ def get_mask_token_index(mask_token_id, inputs):
     `None` if not present in the `inputs`.
     """
     # TODO: Implement this function
-    input_ids = inputs['input_ids']
+    input_ids = inputs['input_ids'][0].tolist()
 
-    if hasattr(input_ids, "numpy"):
-        ids = input_ids.numpy().tolist()[0]
-    else:
-        ids = list(input_ids[0])
-
-    for i, tid in enumerate(ids):
-        if tid == mask_token_id:
+    for i, tid in enumerate(input_ids):
+        if int(tid) == int(mask_token_id):
             return i
-        elif tid is None:
+        else:
             return None
 
 
@@ -82,6 +82,8 @@ def visualize_attentions(tokens, attentions):
     (starting count from 1).
     """
     # TODO: Update this function to produce diagrams for all layers and heads.
+    print(f'Tokens: {tokens}')
+    print(f'Attentions: {attentions}')
     generate_diagram(
         1,
         1,
