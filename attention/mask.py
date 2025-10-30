@@ -56,8 +56,7 @@ def get_mask_token_index(mask_token_id, inputs):
     for i, tid in enumerate(input_ids):
         if int(tid) == int(mask_token_id):
             return i
-        else:
-            return None
+    return None
 
 
 def get_color_for_attention_score(attention_score: float):
@@ -84,6 +83,13 @@ def visualize_attentions(tokens, attentions):
     # TODO: Update this function to produce diagrams for all layers and heads.
     print(f'Tokens: {tokens}')
     print(f'Attentions: {attentions}')
+    for layer_index, layer_attention in enumerate(attentions, start=1):
+        layer_attention_np = layer_attention.detach().cpu()  # [1, H, L, L]
+        num_heads = layer_attention.shape[1]
+        for head_idx in range(num_heads):
+            att = layer_attention[0, head_idx].numpy()  # [L, L]
+            generate_diagram(layer_index, head_idx + 1, tokens, att)
+
     generate_diagram(
         1,
         1,
