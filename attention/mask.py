@@ -1,5 +1,4 @@
 import sys
-import tensorflow as tf
 
 from PIL import Image, ImageDraw, ImageFont
 from transformers import AutoTokenizer, AutoModelForMaskedLM
@@ -19,7 +18,6 @@ PIXELS_PER_WORD = 200
 
 def main():
     text = input("Text: ")
-
     # Tokenize input
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
     inputs = tokenizer(text, return_tensors="pt")
@@ -30,13 +28,13 @@ def main():
     # Use model to process input
     model = AutoModelForMaskedLM.from_pretrained(MODEL)
     model.eval()
-    with torch.no_grad():
+    with torch.inference_mode():
         result = model(**inputs, output_attentions=True)
 
     # Generate predictions
     mask_token_logits = result.logits[0, mask_token_index]
     # top_tokens = tf.math.top_k(mask_token_logits, K).indices.numpy()
-    top_tokens = torch.top_k(mask_token_logits, K).indices.numpy()
+    top_tokens = torch.topk(mask_token_logits, K).indices.cpu().numpy()
     for token in top_tokens:
         print(text.replace(tokenizer.mask_token, tokenizer.decode([token])))
 
@@ -51,7 +49,7 @@ def get_mask_token_index(mask_token_id, inputs):
     `None` if not present in the `inputs`.
     """
     # TODO: Implement this function
-    input_ids = inputs['input_ids'][0].tolist()
+    input_ids = inputs["input_ids"][0].tolist()
 
     for i, tid in enumerate(input_ids):
         if int(tid) == int(mask_token_id):
@@ -69,7 +67,6 @@ def get_color_for_attention_score(attention_score: float):
     return (gray, gray, gray)
 
 
-
 def visualize_attentions(tokens, attentions):
     """
     Produce a graphical representation of self-attention scores.
@@ -81,21 +78,16 @@ def visualize_attentions(tokens, attentions):
     (starting count from 1).
     """
     # TODO: Update this function to produce diagrams for all layers and heads.
-    print(f'Tokens: {tokens}')
-    print(f'Attentions: {attentions}')
+    # attentions is a tuple length 12
+    print(f"Tokens: {tokens}")
+    print(f"Attentions: {attentions}")
     for layer_index, layer_attention in enumerate(attentions, start=1):
-        layer_attention_np = layer_attention.detach().cpu()  # [1, H, L, L]
-        num_heads = layer_attention.shape[1]
-        for head_idx in range(num_heads):
-            att = layer_attention[0, head_idx].numpy()  # [L, L]
-            generate_diagram(layer_index, head_idx + 1, tokens, att)
+        layer_attention_cpu = layer_attention.detach().cpu()  # [1, H, L, L]
+        num_heads = layer_attention_cpu.shape[1]
 
-    generate_diagram(
-        1,
-        1,
-        tokens,
-        attentions[0][0][0]
-    )
+        for head_idx in range(num_heads):
+            att = layer_attention_cpu[0, head_idx].numpy()  # [L, L]
+            generate_diagram(layer_index, head_idx + 1, tokens, att)
 
 
 def generate_diagram(layer_number, head_number, tokens, attention_weights):
@@ -122,7 +114,7 @@ def generate_diagram(layer_number, head_number, tokens, attention_weights):
             (image_size - PIXELS_PER_WORD, PIXELS_PER_WORD + i * GRID_SIZE),
             token,
             fill="white",
-            font=FONT
+            font=FONT,
         )
         token_image = token_image.rotate(90)
         img.paste(token_image, mask=token_image)
@@ -133,7 +125,7 @@ def generate_diagram(layer_number, head_number, tokens, attention_weights):
             (PIXELS_PER_WORD - width, PIXELS_PER_WORD + i * GRID_SIZE),
             token,
             fill="white",
-            font=FONT
+            font=FONT,
         )
 
     # Draw each word
