@@ -1,8 +1,8 @@
 import sys
-
 from PIL import Image, ImageDraw, ImageFont
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-import torch
+from transformers import AutoTokenizer, TFAutoModelForMaskedLM
+import tensorflow as tf
+import numpy as np
 
 # Pre-trained masked language model
 MODEL = "bert-base-uncased"
@@ -20,26 +20,29 @@ def main():
     text = input("Text: ")
     # Tokenize input
     tokenizer = AutoTokenizer.from_pretrained(MODEL)
-    inputs = tokenizer(text, return_tensors="pt")
+    inputs = tokenizer(text, return_tensors="tf")  # Change to TensorFlow tensor
     mask_token_index = get_mask_token_index(tokenizer.mask_token_id, inputs)
     if mask_token_index is None:
         sys.exit(f"Input must include mask token {tokenizer.mask_token}.")
 
     # Use model to process input
-    model = AutoModelForMaskedLM.from_pretrained(MODEL)
-    model.eval()
-    with torch.inference_mode():
-        result = model(**inputs, output_attentions=True)
+    model = TFAutoModelForMaskedLM.from_pretrained(
+        MODEL,
+        from_pt=True,
+        use_safetensors=False,
+    )
+    result = model(**inputs, output_attentions=True, training=False)
 
     # Generate predictions
     mask_token_logits = result.logits[0, mask_token_index]
-    # top_tokens = tf.math.top_k(mask_token_logits, K).indices.numpy()
-    top_tokens = torch.topk(mask_token_logits, K).indices.cpu().numpy()
+    top_tokens = tf.math.top_k(mask_token_logits, K).indices.numpy()
     for token in top_tokens:
         print(text.replace(tokenizer.mask_token, tokenizer.decode([token])))
 
     # Visualize attentions
-    tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0].tolist())
+    tokens = tokenizer.convert_ids_to_tokens(
+        inputs["input_ids"][0].numpy().tolist(), skip_special_tokens=False
+    )
     visualize_attentions(tokens, result.attentions)
 
 
@@ -48,9 +51,9 @@ def get_mask_token_index(mask_token_id, inputs):
     Return the index of the token with the specified `mask_token_id`, or
     `None` if not present in the `inputs`.
     """
-    # TODO: Implement this function
-    input_ids = inputs["input_ids"][0].tolist()
-
+    input_ids = (
+        inputs["input_ids"][0].numpy().tolist()
+    )  # Get numpy array from TensorFlow tensor
     for i, tid in enumerate(input_ids):
         if int(tid) == int(mask_token_id):
             return i
@@ -82,11 +85,10 @@ def visualize_attentions(tokens, attentions):
     print(f"Tokens: {tokens}")
     print(f"Attentions: {attentions}")
     for layer_index, layer_attention in enumerate(attentions, start=1):
-        layer_attention_cpu = layer_attention.detach().cpu()  # [1, H, L, L]
-        num_heads = layer_attention_cpu.shape[1]
+        num_heads = layer_attention.shape[1]
 
         for head_idx in range(num_heads):
-            att = layer_attention_cpu[0, head_idx].numpy()  # [L, L]
+            att = layer_attention[0, head_idx].numpy()  # Convert to NumPy array
             generate_diagram(layer_index, head_idx + 1, tokens, att)
 
 
@@ -94,11 +96,7 @@ def generate_diagram(layer_number, head_number, tokens, attention_weights):
     """
     Generate a diagram representing the self-attention scores for a single
     attention head. The diagram shows one row and column for each of the
-    `tokens`, and cells are shaded based on `attention_weights`, with lighter
-    cells corresponding to higher attention scores.
-
-    The diagram is saved with a filename that includes both the `layer_number`
-    and `head_number`.
+    `tokens`, and cells are shaded based on `attention_weights`.
     """
     # Create new image
     image_size = GRID_SIZE * len(tokens) + PIXELS_PER_WORD
@@ -137,7 +135,7 @@ def generate_diagram(layer_number, head_number, tokens, attention_weights):
             draw.rectangle((x, y, x + GRID_SIZE, y + GRID_SIZE), fill=color)
 
     # Save image
-    img.save(f"Attention_Layer{layer_number}_Head{head_number}.png")
+    img.save(f"S2_Attention_Layer{layer_number}_Head{head_number}.png")
 
 
 if __name__ == "__main__":
