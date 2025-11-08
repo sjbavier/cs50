@@ -14,6 +14,8 @@ K = 3
 FONT = ImageFont.truetype("assets/fonts/OpenSans-Regular.ttf", 28)
 GRID_SIZE = 40
 PIXELS_PER_WORD = 200
+# Enable TensorFlow to use NumPy behavior
+tf.experimental.numpy.experimental_enable_numpy_behavior()
 
 
 def main():
